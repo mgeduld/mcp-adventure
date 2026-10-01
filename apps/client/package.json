@@ -1,0 +1,22 @@
+{
+  "name": "@mcp-adventure/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=../../.env --import tsx src/server.ts",
+    "dev": "node --env-file=../../.env --watch --import tsx src/server.ts",
+    "try:ollama": "node --env-file=../../.env --import tsx scripts/try-ollama.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "^2.1.0",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

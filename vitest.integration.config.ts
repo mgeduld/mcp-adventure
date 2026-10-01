@@ -1,0 +1,13 @@
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "node",
+    include: [
+      "apps/**/*.integration.test.ts",
+      "packages/**/*.integration.test.ts",
+    ],
+    fileParallelism: false,
+    testTimeout: 15_000,
+  },
+});

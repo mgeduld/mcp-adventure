@@ -1,0 +1,35 @@
+{
+  "name": "mcp-adventure",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An LLM-powered text adventure backed by an MCP game server.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
+    "db:psql": "docker compose exec postgres psql -U mcp_adventure -d mcp_adventure",
+    "db:migrate": "npm run migrate --workspace @mcp-adventure/database",
+    "db:status": "npm run status --workspace @mcp-adventure/database",
+    "db:seed": "npm run seed --workspace @mcp-adventure/database",
+    "db:init": "npm run wait --workspace @mcp-adventure/database && npm run db:migrate && npm run db:seed",
+    "db:reset": "npm run reset-schema --workspace @mcp-adventure/database && npm run db:migrate && npm run db:seed",
+    "db:destroy": "docker compose down -v",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:all": "npm run test && npm run test:integration"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "vitest": "^4.1.11"
+  }
+}
