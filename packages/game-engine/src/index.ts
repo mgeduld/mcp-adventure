@@ -7,3 +7,7 @@ export {
   startPlaythrough,
   type StartedPlaythrough,
 } from "./playthroughs/start-playthrough.js";
+
+export {
+  getCurrentEntityState,
+} from "./entities/get-current-entity-state.js";
