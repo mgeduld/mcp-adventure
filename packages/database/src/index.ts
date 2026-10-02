@@ -27,3 +27,8 @@ export {
   type Placement,
   type PlacementRelation,
 } from "../respositories/placements.js";
+
+export {
+  getPlacementOverride,
+  type PlacementOverride,
+} from "../respositories/placement-state.js";
