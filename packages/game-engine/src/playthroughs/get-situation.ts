@@ -1,6 +1,8 @@
 import {
   getPlaythroughById,
   getEntityById,
+  getExitsByRoomId,
+  type RoomExit,
 } from "@mcp-adventure/database";
 
 export type Situation = {
@@ -10,6 +12,7 @@ export type Situation = {
     name: string;
     description: string | null;
   };
+  exits: RoomExit[];
 };
 
 export async function getSituation(
@@ -32,6 +35,11 @@ export async function getSituation(
     );
   }
 
+  const exits = await getExitsByRoomId(
+    playthrough.gameId,
+    room.id,
+  );
+
   return {
     playthroughId: playthrough.id,
     room: {
@@ -39,5 +47,6 @@ export async function getSituation(
       name: room.name,
       description: room.description,
     },
+    exits,
   };
 }
