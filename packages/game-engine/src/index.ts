@@ -11,3 +11,8 @@ export {
 export {
   getCurrentEntityState,
 } from "./entities/get-current-entity-state.js";
+
+export {
+  getCurrentPlacement,
+  type CurrentPlacement,
+} from "./entities/get-current-placement.js";
