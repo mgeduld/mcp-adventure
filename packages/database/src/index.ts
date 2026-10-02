@@ -7,6 +7,7 @@ export {
 
 export {
   createPlaythrough,
+  getPlaythroughById,
   type CreatePlaythroughInput,
   type Playthrough,
-} from "../respositories/playthroughs.js"
+} from "../respositories/playthroughs.js";

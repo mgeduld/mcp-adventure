@@ -69,3 +69,38 @@ export async function createPlaythrough(
     updatedAt: row.updated_at,
   };
 }
+
+export async function getPlaythroughById(
+  id: string,
+  queryable: Queryable = db,
+): Promise<Playthrough | null> {
+  const result = await queryable.query<PlaythroughRow>(
+    `
+      select
+        id,
+        game_id,
+        current_room_id,
+        world_state,
+        created_at,
+        updated_at
+      from playthroughs
+      where id = $1
+    `,
+    [id],
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    gameId: row.game_id,
+    currentRoomId: row.current_room_id,
+    worldState: row.world_state,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
