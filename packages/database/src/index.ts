@@ -21,3 +21,9 @@ export {
 export {
   getEntityStateOverride,
 } from "../respositories/entity-state.js";
+
+export {
+  getPlacementByEntityId,
+  type Placement,
+  type PlacementRelation,
+} from "../respositories/placements.js";
