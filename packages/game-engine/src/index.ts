@@ -16,3 +16,8 @@ export {
   getCurrentPlacement,
   type CurrentPlacement,
 } from "./entities/get-current-placement.js";
+
+export {
+  getSituation,
+  type Situation,
+} from "./playthroughs/get-situation.js";
