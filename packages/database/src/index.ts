@@ -24,6 +24,7 @@ export {
 
 export {
   getPlacementByEntityId,
+  getCurrentPlacementsByTarget,
   type Placement,
   type PlacementRelation,
 } from "../respositories/placements.js";
@@ -37,3 +38,4 @@ export {
   getExitsByRoomId,
   type RoomExit,
 } from "../respositories/connections.js";
+
