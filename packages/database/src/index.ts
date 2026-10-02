@@ -17,3 +17,7 @@ export {
   type Entity,
   type EntityKind,
 } from "../respositories/entities.js";
+
+export {
+  getEntityStateOverride,
+} from "../respositories/entity-state.js";
