@@ -32,6 +32,7 @@ export {
 export {
   getPlacementOverride,
   getInventoryEntityIds,
+  setEntityInInventory,
   type PlacementOverride,
 } from "./respositories/placement-state.js";
 
@@ -39,6 +40,8 @@ export {
   getExitsByRoomId,
   type RoomExit,
 } from "./respositories/connections.js";
+
+
 
 
 

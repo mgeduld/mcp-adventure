@@ -63,3 +63,30 @@ export async function getInventoryEntityIds(
 
   return result.rows.map((row) => row.entity_id);
 }
+
+export async function setEntityInInventory(
+  gameId: string,
+  playthroughId: string,
+  entityId: string,
+  queryable: Queryable = db,
+): Promise<void> {
+  await queryable.query(
+    `
+      insert into placement_state (
+        game_id,
+        playthrough_id,
+        entity_id,
+        target_id,
+        relation,
+        in_inventory
+      )
+      values ($1, $2, $3, null, null, true)
+      on conflict (playthrough_id, entity_id)
+      do update set
+        target_id = null,
+        relation = null,
+        in_inventory = true
+    `,
+    [gameId, playthroughId, entityId],
+  );
+}

@@ -2,7 +2,7 @@
 
 An npm-workspaces monorepo for an LLM-driven text adventure. 
 
-I grew up playing test-adventure games and writing my own. There are two main parts to such projects: the game engine that models and manipulates the world, and what we now called a chatbot, so that the user can issue commands and get feedback in conversational text. 
+I grew up playing text-adventure games and writing my own. There are two main parts to such projects: the game engine that models and manipulates the world, and what we now called a chatbot, so that the user can issue commands and get feedback in conversational text. 
 
 That second part used to mean complex text parsing (e.g. building in grammar), especially if you wanted to accept input like "Use the broad sword to attack the small dragon and then exit through the west door" and not just "kill dragon."
 
