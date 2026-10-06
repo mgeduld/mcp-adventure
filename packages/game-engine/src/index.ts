@@ -26,3 +26,7 @@ export {
   getVisibleRoomContents,
   type VisibleRoomEntity,
 } from "./playthroughs/get-visible-room-contents.js";
+
+export {
+  isCurrentRoomLit,
+} from "./playthroughs/is-current-room-lit.js";
