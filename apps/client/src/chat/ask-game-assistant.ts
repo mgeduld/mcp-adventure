@@ -114,7 +114,7 @@ export async function askGameAssistant(
           `Tool is not available for this request: ${toolCall.function.name}`,
         );
       }
-      
+
       const toolResult = await mcpClient.callTool({
         name: toolCall.function.name,
         arguments: parseArguments(

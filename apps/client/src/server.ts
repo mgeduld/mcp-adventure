@@ -74,9 +74,16 @@ app.post("/api/game/:playthroughId/look", async (request, response, next) => {
     const answer = await askGameAssistant(
       mcpClient,
       `Call look with playthroughId "${playthroughId}". ` +
-      "Describe the returned situation briefly. " +
-      "If isLit is false, describe darkness. " +
-      "Do not invent objects or exits.",
+      "Describe only the returned facts, briefly. " +
+      "For each contents item, match its targetId to room.id " +
+      "or to another contents item's id. " +
+      "If targetId equals room.id, the item is in or on the room, " +
+      "not inside the preceding item in the contents array. " +
+      "Array order does not indicate containment. " +
+      "An exit with portalEntityId null has no door; " +
+      "describe it only as an exit in its direction. " +
+      "Do not infer exit doors from the room's descriptive text. " +
+      "If isLit is false, describe darkness without inventing details.",
       ["look"],
     );
 
