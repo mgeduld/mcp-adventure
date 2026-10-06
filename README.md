@@ -1,6 +1,6 @@
 # MCP Adventure
 
-An npm-workspaces monorepo for an LLM-driven text adventure. This first increment implements only the database schema, migrations, and a small demo world. The other application and package directories are placeholders for later phases.
+An npm-workspaces monorepo for an LLM-driven text adventure. 
 
 ## Prerequisites
 
@@ -169,17 +169,4 @@ npm run db:destroy
 
 `db:reset` and `db:destroy` are destructive. The migration runner records filenames and checksums in `schema_migrations`; it refuses to continue if an already-applied migration file has been edited.
 
-## Monorepo boundaries
-
-```text
-apps/
-  client/          Future UI and LLM orchestration
-  mcp-server/      Future MCP protocol adapter
-packages/
-  database/        SQL, migration tooling, and future repositories
-  game-engine/     Future authoritative game rules
-  shared/          Future genuinely shared types
-```
-
-The intended dependency direction is MCP server → game engine → database. The client will call the MCP server and will not access PostgreSQL directly.
 
