@@ -82,7 +82,7 @@ app.post("/api/game/:playthroughId/look", async (request, response, next) => {
       "If targetId equals room.id, the item is in or on the room, " +
       "not inside the preceding item in the contents array. " +
       "Array order does not indicate containment. " +
-      "An exit with portalEntityId null has no door; " +
+      "When hasDoor is false, describe only an exit in that direction, never a door. " +
       "describe it only as an exit in its direction. " +
       "Do not infer exit doors from the room's descriptive text. " +
       "If isLit is false, describe darkness without inventing details.",

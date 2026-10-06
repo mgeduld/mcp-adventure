@@ -72,6 +72,7 @@ describe("look MCP tool", () => {
             direction: "west",
             destinationRoomId: "20000000-0000-0000-0000-000000000002",
             portalEntityId: null,
+            hasDoor: false
           },
         ],
         contents: [

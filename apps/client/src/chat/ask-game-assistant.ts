@@ -67,7 +67,7 @@ export async function askGameAssistant(
             "Report tool failures honestly; do not claim an action succeeded.",
             "Match each contents item's targetId to room.id or another item's id.",
             "Array order does not indicate containment.",
-            "An exit with portalEntityId null has no door.",
+            "When hasDoor is false, say there is an exit in that direction; do not describe a door there.",
             "Do not infer exit doors from room descriptions.",
             "If isLit is false, describe darkness without inventing details.",
           ]

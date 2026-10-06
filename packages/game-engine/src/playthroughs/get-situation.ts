@@ -22,7 +22,7 @@ export type Situation = {
     };
     isLit: boolean;
     contents: VisibleRoomEntity[];
-    exits: RoomExit[];
+    exits: (RoomExit & { hasDoor: boolean })[];
 };
 
 export async function getSituation(
@@ -65,7 +65,10 @@ export async function getSituation(
             name: room.name,
             description: isLit ? room.description : null,
         },
-        exits,
+        exits: exits.map((exit) => ({
+            ...exit,
+            hasDoor: exit.portalEntityId !== null,
+        })),
         contents,
     };
 }

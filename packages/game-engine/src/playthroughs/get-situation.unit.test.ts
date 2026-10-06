@@ -153,7 +153,22 @@ describe("getSituation", () => {
             databaseMocks.getExitsByRoomId,
         ).toHaveBeenCalledWith("game-id", "throne-room-id", undefined);
 
-        expect(situation.exits).toEqual(exits);
+        expect(situation.exits).toEqual([
+            {
+                connectionId: "hall-connection-id",
+                direction: "west",
+                destinationRoomId: "west-hall-id",
+                portalEntityId: null,
+                hasDoor: false,
+            },
+            {
+                connectionId: "door-connection-id",
+                direction: "north",
+                destinationRoomId: "other-room-id",
+                portalEntityId: "door-id",
+                hasDoor: true,
+            },
+        ]);
     });
 
     it("includes the visible room contents", async () => {
