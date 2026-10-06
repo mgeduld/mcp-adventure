@@ -125,4 +125,33 @@ describe("askGameAssistant", () => {
 
     expect(mcpClient.callTool).not.toHaveBeenCalled();
   });
+
+  it("rejects a tool that is not allowed for the request", async () => {
+    ollamaMocks.chatWithOllama.mockResolvedValue({
+      role: "assistant",
+      content: "",
+      tool_calls: [
+        {
+          function: {
+            name: "start_game",
+            arguments: { gameSlug: "forgotten-keep" },
+          },
+        },
+      ],
+    });
+
+    const mcpClient = createMcpClient();
+
+    await expect(
+      askGameAssistant(
+        mcpClient,
+        "Get game information.",
+        ["get_game_info"],
+      ),
+    ).rejects.toThrow(
+      "Tool is not available for this request: start_game",
+    );
+
+    expect(mcpClient.callTool).not.toHaveBeenCalled();
+  });
 });

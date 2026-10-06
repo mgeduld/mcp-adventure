@@ -57,6 +57,35 @@ app.post("/api/game/start", async (_request, response, next) => {
   }
 });
 
+app.post("/api/game/:playthroughId/look", async (request, response, next) => {
+  const { playthroughId } = request.params;
+
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      .test(playthroughId)
+  ) {
+    response.status(400).json({
+      error: "A valid playthrough ID is required",
+    });
+    return;
+  }
+
+  try {
+    const answer = await askGameAssistant(
+      mcpClient,
+      `Call look with playthroughId "${playthroughId}". ` +
+      "Describe the returned situation briefly. " +
+      "If isLit is false, describe darkness. " +
+      "Do not invent objects or exits.",
+      ["look"],
+    );
+
+    response.json({ answer });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use(errorHandler);
 
 const httpServer = app.listen(port, () => {

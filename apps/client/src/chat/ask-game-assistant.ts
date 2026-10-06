@@ -28,10 +28,15 @@ function parseArguments(
 export async function askGameAssistant(
   mcpClient: Client,
   userMessage: string,
+  allowedToolNames?: readonly string[],
 ): Promise<string> {
   const { tools: mcpTools } = await mcpClient.listTools();
 
-  const ollamaTools: OllamaTool[] = mcpTools.map((tool) => ({
+  const availableTools = allowedToolNames
+    ? mcpTools.filter((tool) => allowedToolNames.includes(tool.name))
+    : mcpTools;
+
+  const ollamaTools: OllamaTool[] = availableTools.map((tool) => ({
     type: "function",
     function: {
       name: tool.name,
@@ -64,7 +69,7 @@ export async function askGameAssistant(
     if (modelTurns >= maximumModelTurns) {
       throw new Error(
         `The model did not produce a final answer after ` +
-          `${maximumModelTurns} turns`,
+        `${maximumModelTurns} turns`,
       );
     }
 
@@ -86,7 +91,7 @@ export async function askGameAssistant(
       if (!toolHasBeenRequested) {
         throw new Error(
           "Ollama answered without calling an MCP tool. " +
-            "Confirm that the selected model supports tool calling.",
+          "Confirm that the selected model supports tool calling.",
         );
       }
 
@@ -100,6 +105,16 @@ export async function askGameAssistant(
 
     // Okay. We now know what tools the model wants to call. Let's call them.
     for (const toolCall of requestedToolCalls) {
+      if (
+        !availableTools.some(
+          (tool) => tool.name === toolCall.function.name,
+        )
+      ) {
+        throw new Error(
+          `Tool is not available for this request: ${toolCall.function.name}`,
+        );
+      }
+      
       const toolResult = await mcpClient.callTool({
         name: toolCall.function.name,
         arguments: parseArguments(
@@ -113,7 +128,7 @@ export async function askGameAssistant(
         tool_name: toolCall.function.name,
         content: JSON.stringify(
           toolResult.structuredContent ??
-            toolResult.content,
+          toolResult.content,
         ),
       });
     }

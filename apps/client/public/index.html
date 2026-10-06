@@ -52,6 +52,10 @@
     Start The Forgotten Keep
   </button>
 
+  <button id="look-button" type="button" disabled>
+    Look around
+  </button>
+
   <p id="game-status">No active playthrough.</p>
 
   <div id="result">No response yet.</div>
@@ -62,6 +66,7 @@
     const startButton = document.querySelector("#start-button");
     const gameStatus = document.querySelector("#game-status");
     const storageKey = "mcp-adventure.playthrough";
+    const lookButton = document.querySelector("#look-button");
 
     let activeGame = null;
 
@@ -71,6 +76,7 @@
         : "No active playthrough.";
 
       startButton.disabled = activeGame !== null;
+      lookButton.disabled = activeGame === null;
     }
 
     try {
@@ -158,6 +164,37 @@
             : "An unexpected error occurred";
       } finally {
         button.disabled = false;
+      }
+    });
+
+    lookButton.addEventListener("click", async () => {
+      if (!activeGame) {
+        return;
+      }
+
+      lookButton.disabled = true;
+      result.textContent = "Looking around...";
+
+      try {
+        const response = await fetch(
+          `/api/game/${encodeURIComponent(activeGame.playthroughId)}/look`,
+          { method: "POST" },
+        );
+
+        const body = await response.json();
+
+        if (!response.ok) {
+          throw new Error(body.error ?? "Could not look around");
+        }
+
+        result.textContent = body.answer;
+      } catch (error) {
+        result.textContent =
+          error instanceof Error
+            ? `Error: ${error.message}`
+            : "An unexpected error occurred";
+      } finally {
+        showActiveGame();
       }
     });
   </script>
