@@ -4,7 +4,7 @@ import {
   expect,
   it,
 } from "vitest";
-import { db } from "../src/db.js";
+import { db } from "../db.js";
 import { createPlaythrough } from "./playthroughs.js";
 import { getCurrentPlacementsByTarget } from "./placements.js";
 

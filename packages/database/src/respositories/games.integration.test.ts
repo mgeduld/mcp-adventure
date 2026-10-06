@@ -4,7 +4,7 @@ import {
   expect,
   it,
 } from "vitest";
-import { db } from "../src/db.js";
+import { db } from "../db.js";
 import { getGameBySlug } from "../respositories/games.js";
 
 describe("getGameBySlug integration", () => {

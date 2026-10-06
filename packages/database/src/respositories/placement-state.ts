@@ -1,5 +1,5 @@
 import type { Pool, PoolClient } from "pg";
-import { db } from "../src/db.js";
+import { db } from "../db.js";
 import type { PlacementRelation } from "./placements.js";
 
 type Queryable = Pool | PoolClient;

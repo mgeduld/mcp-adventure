@@ -4,7 +4,7 @@ import {
   expect,
   it,
 } from "vitest";
-import { db } from "../src/db.js";
+import { db } from "../db.js";
 import { getEntityById } from "./entities.js";
 
 const gameId = "10000000-0000-0000-0000-000000000001";
