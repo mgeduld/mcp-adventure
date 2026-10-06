@@ -4,6 +4,7 @@ import express, {
 } from "express";
 import { askGameAssistant } from "./chat/ask-game-assistant.js";
 import { connectToGameServer } from "./mcp/client.js";
+import { startGame } from "./game/start-game.js";
 
 const port = Number(process.env.PORT ?? 3000);
 
@@ -45,6 +46,16 @@ const errorHandler: ErrorRequestHandler = (
         : "An unexpected error occurred",
   });
 };
+
+app.post("/api/game/start", async (_request, response, next) => {
+  try {
+    const game = await startGame(mcpClient, "forgotten-keep");
+
+    response.status(201).json(game);
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.use(errorHandler);
 

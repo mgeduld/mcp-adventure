@@ -1,86 +1,166 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
 
-    <title>MCP Adventure</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-      body {
-        max-width: 700px;
-        margin: 60px auto;
-        padding: 0 24px;
-        font-family: system-ui, sans-serif;
-        line-height: 1.5;
+  <title>MCP Adventure</title>
+
+  <style>
+    body {
+      max-width: 700px;
+      margin: 60px auto;
+      padding: 0 24px;
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    button {
+      padding: 10px 16px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: wait;
+    }
+
+    #result {
+      margin-top: 24px;
+      padding: 16px;
+      min-height: 60px;
+      white-space: pre-wrap;
+      background: #f3f3f3;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>MCP Adventure</h1>
+
+  <p>
+    Ask the local language model about the seeded demo game.
+  </p>
+
+  <button id="ask-button" type="button">
+    Ask about The Forgotten Keep
+  </button>
+
+  <button id="start-button" type="button">
+    Start The Forgotten Keep
+  </button>
+
+  <p id="game-status">No active playthrough.</p>
+
+  <div id="result">No response yet.</div>
+
+  <script>
+    const button = document.querySelector("#ask-button");
+    const result = document.querySelector("#result");
+    const startButton = document.querySelector("#start-button");
+    const gameStatus = document.querySelector("#game-status");
+    const storageKey = "mcp-adventure.playthrough";
+
+    let activeGame = null;
+
+    function showActiveGame() {
+      gameStatus.textContent = activeGame
+        ? "A playthrough is saved in this browser."
+        : "No active playthrough.";
+
+      startButton.disabled = activeGame !== null;
+    }
+
+    try {
+      const saved = localStorage.getItem(storageKey);
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        if (
+          parsed !== null &&
+          typeof parsed === "object" &&
+          !Array.isArray(parsed) &&
+          typeof parsed.playthroughId === "string" &&
+          parsed.playthroughId.length > 0 &&
+          typeof parsed.currentRoomId === "string" &&
+          parsed.currentRoomId.length > 0 &&
+          typeof parsed.resumeToken === "string" &&
+          parsed.resumeToken.length > 0
+        ) {
+          activeGame = parsed;
+        } else {
+          localStorage.removeItem(storageKey);
+        }
       }
+    } catch {
+      gameStatus.textContent = "Could not read the saved playthrough.";
+    }
 
-      button {
-        padding: 10px 16px;
-        font: inherit;
-        cursor: pointer;
-      }
+    showActiveGame();
 
-      button:disabled {
-        cursor: wait;
-      }
+    startButton.addEventListener("click", async () => {
+      startButton.disabled = true;
+      result.textContent = "Starting The Forgotten Keep...";
 
-      #result {
-        margin-top: 24px;
-        padding: 16px;
-        min-height: 60px;
-        white-space: pre-wrap;
-        background: #f3f3f3;
-        border-radius: 6px;
-      }
-    </style>
-  </head>
+      try {
+        const response = await fetch("/api/game/start", {
+          method: "POST",
+        });
 
-  <body>
-    <h1>MCP Adventure</h1>
+        const body = await response.json();
 
-    <p>
-      Ask the local language model about the seeded demo game.
-    </p>
+        if (!response.ok) {
+          throw new Error(body.error ?? "Could not start the game");
+        }
 
-    <button id="ask-button" type="button">
-      Ask about The Forgotten Keep
-    </button>
-
-    <div id="result">No response yet.</div>
-
-    <script>
-      const button = document.querySelector("#ask-button");
-      const result = document.querySelector("#result");
-
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        result.textContent = "Asking Ollama...";
+        activeGame = body;
 
         try {
-          const response = await fetch("/api/demo", {
-            method: "POST",
-          });
-
-          const body = await response.json();
-
-          if (!response.ok) {
-            throw new Error(body.error ?? "Request failed");
-          }
-
-          result.textContent = body.answer;
-        } catch (error) {
+          localStorage.setItem(storageKey, JSON.stringify(activeGame));
+          result.textContent = "Game started. Your playthrough is saved.";
+        } catch {
           result.textContent =
-            error instanceof Error
-              ? `Error: ${error.message}`
-              : "An unexpected error occurred";
-        } finally {
-          button.disabled = false;
+            "Game started, but this browser could not save it for refresh.";
         }
-      });
-    </script>
-  </body>
+      } catch (error) {
+        result.textContent =
+          error instanceof Error
+            ? `Error: ${error.message}`
+            : "An unexpected error occurred";
+      } finally {
+        showActiveGame();
+      }
+    });
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      result.textContent = "Asking Ollama...";
+
+      try {
+        const response = await fetch("/api/demo", {
+          method: "POST",
+        });
+
+        const body = await response.json();
+
+        if (!response.ok) {
+          throw new Error(body.error ?? "Request failed");
+        }
+
+        result.textContent = body.answer;
+      } catch (error) {
+        result.textContent =
+          error instanceof Error
+            ? `Error: ${error.message}`
+            : "An unexpected error occurred";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+
 </html>
