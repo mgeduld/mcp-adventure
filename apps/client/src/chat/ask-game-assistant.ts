@@ -53,7 +53,9 @@ export async function askGameAssistant(
         "You are an assistant for a text-adventure application.",
         "Use the available tools whenever the user asks about a game.",
         "Do not invent game information.",
-        "After receiving a tool result, answer the user briefly.",
+        "Continue calling tools until the player's request is completed or cannot be completed.",
+        "Looking up facts is a prerequisite, not completion of a requested action.",
+        "Then answer the user briefly using the tool results.",
         ...(activePlaythroughId
           ? [
             `The active playthrough ID is "${activePlaythroughId}".`,
@@ -80,6 +82,13 @@ export async function askGameAssistant(
   let toolHasBeenRequested = false; // has a tool been requested in any iteration of the while loop so far?
   const maximumModelTurns = 5; // let's make sure we don't have an infinitely-long conversation!
 
+  const requiresInitialLook =
+    activePlaythroughId !== undefined &&
+    availableTools.some((tool) => tool.name === "look") &&
+    availableTools.some((tool) => tool.name === "take");
+
+  let hasSuccessfulLook = false;
+
   while (true) {
     if (modelTurns >= maximumModelTurns) {
       throw new Error(
@@ -90,9 +99,14 @@ export async function askGameAssistant(
 
     modelTurns += 1;
 
+    const toolsForTurn =
+      requiresInitialLook && !hasSuccessfulLook
+        ? ollamaTools.filter((tool) => tool.function.name === "look")
+        : ollamaTools;
+
     const assistantMessage = await chatWithOllama({
       messages,
-      tools: ollamaTools,
+      tools: toolsForTurn,
     });
 
     // history sent back to model with each prompt
@@ -121,8 +135,8 @@ export async function askGameAssistant(
     // Okay. We now know what tools the model wants to call. Let's call them.
     for (const toolCall of requestedToolCalls) {
       if (
-        !availableTools.some(
-          (tool) => tool.name === toolCall.function.name,
+        !toolsForTurn.some(
+          (tool) => tool.function.name === toolCall.function.name,
         )
       ) {
         throw new Error(
@@ -138,7 +152,7 @@ export async function askGameAssistant(
         "MCP request:",
         toolCall.function.name,
         JSON.stringify(parsedArguments),
-      );  
+      );
 
       const toolResult = await mcpClient.callTool({
         name: toolCall.function.name,
@@ -149,6 +163,13 @@ export async function askGameAssistant(
           }
           : parsedArguments,
       });
+
+      if (
+        toolCall.function.name === "look" &&
+        toolResult.isError !== true
+      ) {
+        hasSuccessfulLook = true;
+      }
 
       console.log("MCP result:", JSON.stringify(toolResult, null, 2));
 

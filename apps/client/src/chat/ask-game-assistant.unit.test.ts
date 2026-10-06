@@ -213,4 +213,94 @@ describe("askGameAssistant", () => {
       },
     });
   });
+
+  it("offers take only after receiving a successful look result", async () => {
+    const keyId = "30000000-0000-0000-0000-000000000004";
+
+    const callTool = vi.fn()
+      .mockResolvedValueOnce({
+        content: [],
+        structuredContent: {
+          contents: [{ id: keyId, name: "blue key" }],
+        },
+      })
+      .mockResolvedValueOnce({
+        content: [],
+        structuredContent: {
+          entityId: keyId,
+          name: "blue key",
+          status: "taken",
+        },
+      });
+
+    const mcpClient = {
+      listTools: vi.fn().mockResolvedValue({
+        tools: ["look", "take"].map((name) => ({
+          name,
+          inputSchema: { type: "object", properties: {} },
+        })),
+      }),
+      callTool,
+    } as unknown as Client;
+
+    ollamaMocks.chatWithOllama
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          {
+            function: {
+              name: "look",
+              arguments: {},
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          {
+            function: {
+              name: "take",
+              arguments: { entityId: keyId },
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: "You take the blue key.",
+      });
+
+    const answer = await askGameAssistant(
+      mcpClient,
+      "Take the blue key.",
+      ["look", "take"],
+      "active-playthrough-id",
+    );
+
+    const firstTools =
+      ollamaMocks.chatWithOllama.mock.calls[0]?.[0].tools;
+    const secondTools =
+      ollamaMocks.chatWithOllama.mock.calls[1]?.[0].tools;
+
+    expect(firstTools.map(
+      (tool: { function: { name: string } }) => tool.function.name,
+    )).toEqual(["look"]);
+
+    expect(secondTools.map(
+      (tool: { function: { name: string } }) => tool.function.name,
+    )).toEqual(["look", "take"]);
+
+    expect(callTool).toHaveBeenNthCalledWith(2, {
+      name: "take",
+      arguments: {
+        entityId: keyId,
+        playthroughId: "active-playthrough-id",
+      },
+    });
+
+    expect(answer).toBe("You take the blue key.");
+  });
 });
