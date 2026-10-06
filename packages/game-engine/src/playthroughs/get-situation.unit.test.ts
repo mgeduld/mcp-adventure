@@ -68,11 +68,11 @@ describe("getSituation", () => {
 
         expect(
             databaseMocks.getPlaythroughById,
-        ).toHaveBeenCalledWith("playthrough-id");
+        ).toHaveBeenCalledWith("playthrough-id", undefined);
 
         expect(
             databaseMocks.getEntityById,
-        ).toHaveBeenCalledWith("game-id", "throne-room-id");
+        ).toHaveBeenCalledWith("game-id", "throne-room-id", undefined);
 
         expect(situation).toEqual({
             playthroughId: "playthrough-id",
@@ -151,7 +151,7 @@ describe("getSituation", () => {
 
         expect(
             databaseMocks.getExitsByRoomId,
-        ).toHaveBeenCalledWith("game-id", "throne-room-id");
+        ).toHaveBeenCalledWith("game-id", "throne-room-id", undefined);
 
         expect(situation.exits).toEqual(exits);
     });
@@ -173,7 +173,7 @@ describe("getSituation", () => {
 
         expect(
             contentsMocks.getVisibleRoomContents,
-        ).toHaveBeenCalledWith("playthrough-id");
+        ).toHaveBeenCalledWith("playthrough-id", undefined);
 
         expect(situation.contents).toEqual(contents);
     });
@@ -197,7 +197,7 @@ describe("getSituation", () => {
 
         expect(
             lightingMocks.isCurrentRoomLit,
-        ).toHaveBeenCalledWith("playthrough-id");
+        ).toHaveBeenCalledWith("playthrough-id", undefined);
 
         expect(databaseMocks.getExitsByRoomId).not.toHaveBeenCalled();
         expect(

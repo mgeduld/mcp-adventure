@@ -3,6 +3,7 @@ import {
     getEntityById,
     getExitsByRoomId,
     type RoomExit,
+    type Queryable
 } from "@mcp-adventure/database";
 
 import {
@@ -26,8 +27,9 @@ export type Situation = {
 
 export async function getSituation(
     playthroughId: string,
+    queryable?: Queryable,
 ): Promise<Situation> {
-    const playthrough = await getPlaythroughById(playthroughId);
+    const playthrough = await getPlaythroughById(playthroughId, queryable);
 
     if (!playthrough) {
         throw new Error(`Playthrough not found: ${playthroughId}`);
@@ -36,6 +38,7 @@ export async function getSituation(
     const room = await getEntityById(
         playthrough.gameId,
         playthrough.currentRoomId,
+        queryable
     );
 
     if (!room || room.kind !== "room") {
@@ -44,14 +47,14 @@ export async function getSituation(
         );
     }
 
-    const isLit = await isCurrentRoomLit(playthroughId);
+    const isLit = await isCurrentRoomLit(playthroughId, queryable);
 
     const exits = isLit
-        ? await getExitsByRoomId(playthrough.gameId, room.id)
+        ? await getExitsByRoomId(playthrough.gameId, room.id, queryable)
         : [];
 
     const contents = isLit
-        ? await getVisibleRoomContents(playthroughId)
+        ? await getVisibleRoomContents(playthroughId, queryable)
         : [];
 
     return {

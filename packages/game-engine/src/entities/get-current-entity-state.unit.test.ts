@@ -49,15 +49,15 @@ describe("getCurrentEntityState", () => {
 
     expect(
       databaseMocks.getPlaythroughById,
-    ).toHaveBeenCalledWith("playthrough-id");
+    ).toHaveBeenCalledWith("playthrough-id", undefined);
 
     expect(
       databaseMocks.getEntityById,
-    ).toHaveBeenCalledWith("game-id", "chest-id");
+    ).toHaveBeenCalledWith("game-id", "chest-id", undefined);
 
     expect(
       databaseMocks.getEntityStateOverride,
-    ).toHaveBeenCalledWith("playthrough-id", "chest-id");
+    ).toHaveBeenCalledWith("playthrough-id", "chest-id", undefined);
   });
 
   it("overrides saved fields and preserves other defaults", async () => {

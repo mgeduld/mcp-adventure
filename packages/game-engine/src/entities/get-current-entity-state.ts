@@ -4,11 +4,14 @@ import {
   getEntityStateOverride,
 } from "@mcp-adventure/database";
 
+import type { Queryable } from "@mcp-adventure/database";
+
 export async function getCurrentEntityState(
   playthroughId: string,
   entityId: string,
+  queryable?: Queryable,
 ): Promise<Record<string, unknown>> {
-  const playthrough = await getPlaythroughById(playthroughId);
+  const playthrough = await getPlaythroughById(playthroughId, queryable);
 
   if (!playthrough) {
     throw new Error(`Playthrough not found: ${playthroughId}`);
@@ -17,6 +20,7 @@ export async function getCurrentEntityState(
   const entity = await getEntityById(
     playthrough.gameId,
     entityId,
+    queryable
   );
 
   if (!entity) {
@@ -26,6 +30,7 @@ export async function getCurrentEntityState(
   const override = await getEntityStateOverride(
     playthroughId,
     entityId,
+    queryable
   );
 
   return {

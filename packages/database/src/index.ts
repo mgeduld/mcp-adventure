@@ -1,4 +1,4 @@
-export { db } from "./db.js";
+export { db, type Queryable } from "./db.js";
 
 export {
   getGameBySlug,

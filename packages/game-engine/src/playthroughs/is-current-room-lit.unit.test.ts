@@ -85,11 +85,13 @@ describe("isCurrentRoomLit", () => {
 
     expect(mocks.getInventoryEntityIds).toHaveBeenCalledWith(
       "playthrough-id",
+      undefined
     );
 
     expect(mocks.getCurrentEntityState).toHaveBeenCalledWith(
       "playthrough-id",
       "lantern-id",
+      undefined
     );
   });
 

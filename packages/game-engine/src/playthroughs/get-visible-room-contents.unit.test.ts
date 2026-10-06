@@ -150,6 +150,7 @@ describe("getVisibleRoomContents", () => {
     expect(mocks.getCurrentEntityState).toHaveBeenCalledWith(
       "playthrough-id",
       "chest-id",
+      undefined
     );
   });
 

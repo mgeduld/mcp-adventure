@@ -4,9 +4,9 @@ import {
   getCurrentPlacementsByTarget,
   type Entity,
   type PlacementRelation,
+  type Queryable
 } from "@mcp-adventure/database";
 import { getCurrentEntityState } from "../entities/get-current-entity-state.js";
-
 export type VisibleRoomEntity = {
   id: string;
   name: string;
@@ -17,8 +17,9 @@ export type VisibleRoomEntity = {
 
 export async function getVisibleRoomContents(
   playthroughId: string,
+  queryable?: Queryable,
 ): Promise<VisibleRoomEntity[]> {
-  const playthrough = await getPlaythroughById(playthroughId);
+  const playthrough = await getPlaythroughById(playthroughId, queryable);
 
   if (!playthrough) {
     throw new Error(`Playthrough not found: ${playthroughId}`);
@@ -29,6 +30,7 @@ export async function getVisibleRoomContents(
   const room = await getEntityById(
     playthrough.gameId,
     playthrough.currentRoomId,
+    queryable
   );
 
   if (!room || room.kind !== "room") {
@@ -50,11 +52,12 @@ export async function getVisibleRoomContents(
     const placements = await getCurrentPlacementsByTarget(
       playthroughId,
       target.id,
+      queryable
     );
 
     const hidesInterior =
       target.properties.openable === true &&
-      (await getCurrentEntityState(playthroughId, target.id)).open !== true;
+      (await getCurrentEntityState(playthroughId, target.id, queryable)).open !== true;
 
     for (const placement of placements) {
       if (placement.relation === "in" && hidesInterior) {
@@ -75,6 +78,7 @@ export async function getVisibleRoomContents(
       const entity = await getEntityById(
         gameId,
         placement.entityId,
+        queryable
       );
 
       if (!entity) {

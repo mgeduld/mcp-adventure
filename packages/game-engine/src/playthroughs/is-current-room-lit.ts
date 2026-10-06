@@ -2,6 +2,7 @@ import {
   getPlaythroughById,
   getEntityById,
   getInventoryEntityIds,
+  type Queryable
 } from "@mcp-adventure/database";
 import { getCurrentEntityState } from "../entities/get-current-entity-state.js";
 import { getVisibleRoomContents } from "./get-visible-room-contents.js";
@@ -16,8 +17,9 @@ import { getVisibleRoomContents } from "./get-visible-room-contents.js";
 
 export async function isCurrentRoomLit(
   playthroughId: string,
+  queryable?: Queryable,
 ): Promise<boolean> {
-  const playthrough = await getPlaythroughById(playthroughId);
+  const playthrough = await getPlaythroughById(playthroughId, queryable);
 
   if (!playthrough) {
     throw new Error(`Playthrough not found: ${playthroughId}`);
@@ -26,6 +28,7 @@ export async function isCurrentRoomLit(
   const room = await getEntityById(
     playthrough.gameId,
     playthrough.currentRoomId,
+    queryable
   );
 
   if (!room || room.kind !== "room") {
@@ -38,8 +41,8 @@ export async function isCurrentRoomLit(
     return true;
   }
 
-  const contents = await getVisibleRoomContents(playthroughId);
-  const inventoryIds = await getInventoryEntityIds(playthroughId);
+  const contents = await getVisibleRoomContents(playthroughId, queryable);
+  const inventoryIds = await getInventoryEntityIds(playthroughId, queryable);
 
   const candidateIds = [
     ...contents.map((entity) => entity.id),
@@ -50,6 +53,7 @@ export async function isCurrentRoomLit(
     const entity = await getEntityById(
       playthrough.gameId,
       entityId,
+      queryable
     );
 
     if (!entity) {
@@ -63,6 +67,7 @@ export async function isCurrentRoomLit(
     const state = await getCurrentEntityState(
       playthroughId,
       entityId,
+      queryable
     );
 
     if (state.on === true) {
