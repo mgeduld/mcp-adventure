@@ -214,7 +214,7 @@ describe("askGameAssistant", () => {
     });
   });
 
-  it("offers take only after receiving a successful look result", async () => {
+  it("supplies a fresh look before the model requests take", async () => {
     const keyId = "30000000-0000-0000-0000-000000000004";
 
     const callTool = vi.fn()
@@ -244,29 +244,35 @@ describe("askGameAssistant", () => {
     } as unknown as Client;
 
     ollamaMocks.chatWithOllama
-      .mockResolvedValueOnce({
-        role: "assistant",
-        content: "",
-        tool_calls: [
-          {
-            function: {
-              name: "look",
-              arguments: {},
-            },
+      .mockImplementationOnce(async ({ messages }) => {
+        expect(callTool).toHaveBeenCalledTimes(1);
+        expect(callTool).toHaveBeenNthCalledWith(1, {
+          name: "look",
+          arguments: {
+            playthroughId: "active-playthrough-id",
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        role: "assistant",
-        content: "",
-        tool_calls: [
-          {
-            function: {
-              name: "take",
-              arguments: { entityId: keyId },
+        });
+
+        expect(messages.at(-1)).toEqual({
+          role: "tool",
+          tool_name: "look",
+          content: JSON.stringify({
+            contents: [{ id: keyId, name: "blue key" }],
+          }),
+        });
+
+        return {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              function: {
+                name: "take",
+                arguments: { entityId: keyId },
+              },
             },
-          },
-        ],
+          ],
+        };
       })
       .mockResolvedValueOnce({
         role: "assistant",
@@ -279,19 +285,6 @@ describe("askGameAssistant", () => {
       ["look", "take"],
       "active-playthrough-id",
     );
-
-    const firstTools =
-      ollamaMocks.chatWithOllama.mock.calls[0]?.[0].tools;
-    const secondTools =
-      ollamaMocks.chatWithOllama.mock.calls[1]?.[0].tools;
-
-    expect(firstTools.map(
-      (tool: { function: { name: string } }) => tool.function.name,
-    )).toEqual(["look"]);
-
-    expect(secondTools.map(
-      (tool: { function: { name: string } }) => tool.function.name,
-    )).toEqual(["look", "take"]);
 
     expect(callTool).toHaveBeenNthCalledWith(2, {
       name: "take",

@@ -59,8 +59,10 @@ export async function askGameAssistant(
         ...(activePlaythroughId
           ? [
             `The active playthrough ID is "${activePlaythroughId}".`,
-            "Use look to obtain current facts and entity IDs before taking an object.",
-            "Never invent entity IDs.",
+            "A fresh look result is supplied before your first response.",
+            "Use its exact entity IDs when requesting actions.",
+            "For a request to take an object, call take; describing the room alone does not complete that request.",
+            "Never claim an object was taken without a successful take result.", "Never invent entity IDs.",
             "Only perform actions requested by the player.",
             "Report tool failures honestly; do not claim an action succeeded.",
             "Match each contents item's targetId to room.id or another item's id.",
@@ -82,12 +84,50 @@ export async function askGameAssistant(
   let toolHasBeenRequested = false; // has a tool been requested in any iteration of the while loop so far?
   const maximumModelTurns = 5; // let's make sure we don't have an infinitely-long conversation!
 
-  const requiresInitialLook =
+  if (
     activePlaythroughId !== undefined &&
-    availableTools.some((tool) => tool.name === "look") &&
-    availableTools.some((tool) => tool.name === "take");
+    availableTools.some((tool) => tool.name === "look")
+  ) {
+    const argumentsForLook = {
+      playthroughId: activePlaythroughId,
+    };
 
-  let hasSuccessfulLook = false;
+    const initialLook = await mcpClient.callTool({
+      name: "look",
+      arguments: argumentsForLook,
+    });
+
+    if (initialLook.isError) {
+      throw new Error(
+        "Could not read the current situation: " +
+        JSON.stringify(initialLook.content),
+      );
+    }
+
+    messages.push(
+      {
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          {
+            function: {
+              name: "look",
+              arguments: argumentsForLook,
+            },
+          },
+        ],
+      },
+      {
+        role: "tool",
+        tool_name: "look",
+        content: JSON.stringify(
+          initialLook.structuredContent ?? initialLook.content,
+        ),
+      },
+    );
+
+    toolHasBeenRequested = true;
+  }
 
   while (true) {
     if (modelTurns >= maximumModelTurns) {
@@ -99,14 +139,9 @@ export async function askGameAssistant(
 
     modelTurns += 1;
 
-    const toolsForTurn =
-      requiresInitialLook && !hasSuccessfulLook
-        ? ollamaTools.filter((tool) => tool.function.name === "look")
-        : ollamaTools;
-
     const assistantMessage = await chatWithOllama({
       messages,
-      tools: toolsForTurn,
+      tools: ollamaTools,
     });
 
     // history sent back to model with each prompt
@@ -135,7 +170,7 @@ export async function askGameAssistant(
     // Okay. We now know what tools the model wants to call. Let's call them.
     for (const toolCall of requestedToolCalls) {
       if (
-        !toolsForTurn.some(
+        !ollamaTools.some(
           (tool) => tool.function.name === toolCall.function.name,
         )
       ) {
@@ -148,12 +183,6 @@ export async function askGameAssistant(
         toolCall.function.arguments,
       );
 
-      console.log(
-        "MCP request:",
-        toolCall.function.name,
-        JSON.stringify(parsedArguments),
-      );
-
       const toolResult = await mcpClient.callTool({
         name: toolCall.function.name,
         arguments: activePlaythroughId
@@ -163,15 +192,6 @@ export async function askGameAssistant(
           }
           : parsedArguments,
       });
-
-      if (
-        toolCall.function.name === "look" &&
-        toolResult.isError !== true
-      ) {
-        hasSuccessfulLook = true;
-      }
-
-      console.log("MCP result:", JSON.stringify(toolResult, null, 2));
 
       // history sent back to model with each prompt (now including tool-call result)
       messages.push({
