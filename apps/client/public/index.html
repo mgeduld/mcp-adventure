@@ -34,6 +34,31 @@
       background: #f3f3f3;
       border-radius: 6px;
     }
+
+    #command-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    #command-form label {
+      width: 100%;
+    }
+
+    #command-input {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px;
+      font: inherit;
+    }
+
+    #conversation p {
+      padding: 12px;
+      background: #f3f3f3;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 
@@ -58,6 +83,14 @@
 
   <p id="game-status">No active playthrough.</p>
 
+  <form id="command-form">
+    <label for="command-input">What would you like to do?</label>
+    <input id="command-input" type="text" maxlength="2000" placeholder="Take the blue key" required disabled />
+    <button id="send-button" type="submit" disabled>Send</button>
+  </form>
+
+  <div id="conversation" role="log" aria-label="Game conversation"></div>
+
   <div id="result">No response yet.</div>
 
   <script>
@@ -67,6 +100,12 @@
     const gameStatus = document.querySelector("#game-status");
     const storageKey = "mcp-adventure.playthrough";
     const lookButton = document.querySelector("#look-button");
+    const commandForm = document.querySelector("#command-form");
+    const commandInput = document.querySelector("#command-input");
+    const sendButton = document.querySelector("#send-button");
+    const conversation = document.querySelector("#conversation");
+
+    let commandPending = false;
 
     let activeGame = null;
 
@@ -76,8 +115,67 @@
         : "No active playthrough.";
 
       startButton.disabled = activeGame !== null;
-      lookButton.disabled = activeGame === null;
+      lookButton.disabled = activeGame === null || commandPending;
+      commandInput.disabled = activeGame === null || commandPending;
+      sendButton.disabled = activeGame === null || commandPending;
     }
+
+    function appendMessage(speaker, text) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = `${speaker}: ${text}`;
+      conversation.appendChild(paragraph);
+    }
+
+    commandForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const message = commandInput.value.trim();
+
+      if (!activeGame || commandPending || !message) {
+        return;
+      }
+
+      commandPending = true;
+      appendMessage("You", message);
+      commandInput.value = "";
+      result.textContent = "Thinking...";
+      showActiveGame();
+
+      try {
+        const response = await fetch(
+          `/api/game/${encodeURIComponent(activeGame.playthroughId)}/chat`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message }),
+          },
+        );
+
+        const body = await response.json();
+
+        if (!response.ok) {
+          throw new Error(body.error ?? "Could not process your command");
+        }
+
+        appendMessage("Game", body.answer);
+        result.textContent = "";
+      } catch (error) {
+        appendMessage(
+          "Error",
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        );
+
+        result.textContent = "";
+      } finally {
+        commandPending = false;
+        showActiveGame();
+        commandInput.focus();
+      }
+    });
 
     try {
       const saved = localStorage.getItem(storageKey);
@@ -195,6 +293,64 @@
             : "An unexpected error occurred";
       } finally {
         showActiveGame();
+      }
+    });
+
+
+    function appendMessage(speaker, text) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = `${speaker}: ${text}`;
+      conversation.appendChild(paragraph);
+    }
+
+    commandForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const message = commandInput.value.trim();
+
+      if (!activeGame || commandPending || !message) {
+        return;
+      }
+
+      commandPending = true;
+      appendMessage("You", message);
+      commandInput.value = "";
+      result.textContent = "Thinking...";
+      showActiveGame();
+
+      try {
+        const response = await fetch(
+          `/api/game/${encodeURIComponent(activeGame.playthroughId)}/chat`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message }),
+          },
+        );
+
+        const body = await response.json();
+
+        if (!response.ok) {
+          throw new Error(body.error ?? "Could not process your command");
+        }
+
+        appendMessage("Game", body.answer);
+        result.textContent = "";
+      } catch (error) {
+        appendMessage(
+          "Error",
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        );
+
+        result.textContent = "";
+      } finally {
+        commandPending = false;
+        showActiveGame();
+        commandInput.focus();
       }
     });
   </script>

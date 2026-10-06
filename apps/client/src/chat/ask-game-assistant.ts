@@ -54,20 +54,20 @@ export async function askGameAssistant(
         "Use the available tools whenever the user asks about a game.",
         "Do not invent game information.",
         "After receiving a tool result, answer the user briefly.",
-         ...(activePlaythroughId
-        ? [
-          `The active playthrough ID is "${activePlaythroughId}".`,
-          "Use look to obtain current facts and entity IDs before taking an object.",
-          "Never invent entity IDs.",
-          "Only perform actions requested by the player.",
-          "Report tool failures honestly; do not claim an action succeeded.",
-          "Match each contents item's targetId to room.id or another item's id.",
-          "Array order does not indicate containment.",
-          "An exit with portalEntityId null has no door.",
-          "Do not infer exit doors from room descriptions.",
-          "If isLit is false, describe darkness without inventing details.",
-        ]
-        : []),
+        ...(activePlaythroughId
+          ? [
+            `The active playthrough ID is "${activePlaythroughId}".`,
+            "Use look to obtain current facts and entity IDs before taking an object.",
+            "Never invent entity IDs.",
+            "Only perform actions requested by the player.",
+            "Report tool failures honestly; do not claim an action succeeded.",
+            "Match each contents item's targetId to room.id or another item's id.",
+            "Array order does not indicate containment.",
+            "An exit with portalEntityId null has no door.",
+            "Do not infer exit doors from room descriptions.",
+            "If isLit is false, describe darkness without inventing details.",
+          ]
+          : []),
       ].join(" "),
     },
     {
@@ -134,6 +134,12 @@ export async function askGameAssistant(
         toolCall.function.arguments,
       );
 
+      console.log(
+        "MCP request:",
+        toolCall.function.name,
+        JSON.stringify(parsedArguments),
+      );  
+
       const toolResult = await mcpClient.callTool({
         name: toolCall.function.name,
         arguments: activePlaythroughId
@@ -143,6 +149,8 @@ export async function askGameAssistant(
           }
           : parsedArguments,
       });
+
+      console.log("MCP result:", JSON.stringify(toolResult, null, 2));
 
       // history sent back to model with each prompt (now including tool-call result)
       messages.push({
