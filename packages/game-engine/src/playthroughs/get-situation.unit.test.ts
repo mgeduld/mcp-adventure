@@ -16,6 +16,10 @@ const contentsMocks = vi.hoisted(() => ({
     getVisibleRoomContents: vi.fn(),
 }));
 
+const lightingMocks = vi.hoisted(() => ({
+    isCurrentRoomLit: vi.fn(),
+}));
+
 vi.mock("@mcp-adventure/database", () => ({
     getPlaythroughById: databaseMocks.getPlaythroughById,
     getEntityById: databaseMocks.getEntityById,
@@ -24,6 +28,10 @@ vi.mock("@mcp-adventure/database", () => ({
 
 vi.mock("./get-visible-room-contents.js", () => ({
     getVisibleRoomContents: contentsMocks.getVisibleRoomContents,
+}));
+
+vi.mock("./is-current-room-lit.js", () => ({
+    isCurrentRoomLit: lightingMocks.isCurrentRoomLit,
 }));
 
 import { getSituation } from "./get-situation.js";
@@ -51,6 +59,8 @@ describe("getSituation", () => {
 
         contentsMocks.getVisibleRoomContents.mockReset();
         contentsMocks.getVisibleRoomContents.mockResolvedValue([]);
+        lightingMocks.isCurrentRoomLit.mockReset();
+        lightingMocks.isCurrentRoomLit.mockResolvedValue(true);
     });
 
     it("returns the playthrough's current room", async () => {
@@ -71,6 +81,7 @@ describe("getSituation", () => {
                 name: "Throne Room",
                 description: "A faded throne faces a scarred oak table.",
             },
+            isLit: true,
             exits: [],
             contents: [],
         });
@@ -165,5 +176,32 @@ describe("getSituation", () => {
         ).toHaveBeenCalledWith("playthrough-id");
 
         expect(situation.contents).toEqual(contents);
+    });
+
+    it("hides visual details when the current room is dark", async () => {
+        lightingMocks.isCurrentRoomLit.mockResolvedValue(false);
+
+        const situation = await getSituation("playthrough-id");
+
+        expect(situation).toEqual({
+            playthroughId: "playthrough-id",
+            isLit: false,
+            room: {
+                id: "throne-room-id",
+                name: "Throne Room",
+                description: null,
+            },
+            exits: [],
+            contents: [],
+        });
+
+        expect(
+            lightingMocks.isCurrentRoomLit,
+        ).toHaveBeenCalledWith("playthrough-id");
+
+        expect(databaseMocks.getExitsByRoomId).not.toHaveBeenCalled();
+        expect(
+            contentsMocks.getVisibleRoomContents,
+        ).not.toHaveBeenCalled();
     });
 });
