@@ -83,15 +83,15 @@
 
   <p id="game-status">No active playthrough.</p>
 
+  <div id="conversation" role="log" aria-label="Game conversation"></div>
+
+  <div id="result">No response yet.</div>
+
   <form id="command-form">
     <label for="command-input">What would you like to do?</label>
     <input id="command-input" type="text" maxlength="2000" placeholder="Take the blue key" required disabled />
     <button id="send-button" type="submit" disabled>Send</button>
   </form>
-
-  <div id="conversation" role="log" aria-label="Game conversation"></div>
-
-  <div id="result">No response yet.</div>
 
   <script>
     const button = document.querySelector("#ask-button");
@@ -118,12 +118,6 @@
       lookButton.disabled = activeGame === null || commandPending;
       commandInput.disabled = activeGame === null || commandPending;
       sendButton.disabled = activeGame === null || commandPending;
-    }
-
-    function appendMessage(speaker, text) {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = `${speaker}: ${text}`;
-      conversation.appendChild(paragraph);
     }
 
     commandForm.addEventListener("submit", async (event) => {
