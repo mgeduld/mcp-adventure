@@ -21,3 +21,8 @@ export {
   getSituation,
   type Situation,
 } from "./playthroughs/get-situation.js";
+
+export {
+  getVisibleRoomContents,
+  type VisibleRoomEntity,
+} from "./playthroughs/get-visible-room-contents.js";
