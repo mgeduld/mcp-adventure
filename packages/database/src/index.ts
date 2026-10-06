@@ -8,6 +8,7 @@ export {
 export {
   createPlaythrough,
   getPlaythroughById,
+  lockPlaythrough,
   type CreatePlaythroughInput,
   type Playthrough,
 } from "./respositories/playthroughs.js";

@@ -104,3 +104,22 @@ export async function getPlaythroughById(
     updatedAt: row.updated_at,
   };
 }
+
+export async function lockPlaythrough(
+  id: string,
+  client: PoolClient,
+): Promise<void> {
+  const result = await client.query<{ id: string }>(
+    `
+      select id
+      from playthroughs
+      where id = $1
+      for update
+    `,
+    [id],
+  );
+
+  if (!result.rows[0]) {
+    throw new Error(`Playthrough not found: ${id}`);
+  }
+}

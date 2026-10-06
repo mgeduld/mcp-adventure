@@ -30,3 +30,8 @@ export {
 export {
   isCurrentRoomLit,
 } from "./playthroughs/is-current-room-lit.js";
+
+export {
+  takeEntity,
+  type TakeResult,
+} from "./entities/take-entity.js"
