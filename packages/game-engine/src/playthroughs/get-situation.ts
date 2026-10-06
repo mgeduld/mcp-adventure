@@ -5,6 +5,11 @@ import {
   type RoomExit,
 } from "@mcp-adventure/database";
 
+import {
+  getVisibleRoomContents,
+  type VisibleRoomEntity,
+} from "./get-visible-room-contents.js";
+
 export type Situation = {
   playthroughId: string;
   room: {
@@ -12,6 +17,7 @@ export type Situation = {
     name: string;
     description: string | null;
   };
+  contents: VisibleRoomEntity[];
   exits: RoomExit[];
 };
 
@@ -40,6 +46,8 @@ export async function getSituation(
     room.id,
   );
 
+  const contents = await getVisibleRoomContents(playthroughId);
+
   return {
     playthroughId: playthrough.id,
     room: {
@@ -48,5 +56,6 @@ export async function getSituation(
       description: room.description,
     },
     exits,
+    contents
   };
 }

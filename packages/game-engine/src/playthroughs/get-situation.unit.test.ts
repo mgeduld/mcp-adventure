@@ -12,10 +12,18 @@ const databaseMocks = vi.hoisted(() => ({
     getExitsByRoomId: vi.fn(),
 }));
 
+const contentsMocks = vi.hoisted(() => ({
+    getVisibleRoomContents: vi.fn(),
+}));
+
 vi.mock("@mcp-adventure/database", () => ({
     getPlaythroughById: databaseMocks.getPlaythroughById,
     getEntityById: databaseMocks.getEntityById,
     getExitsByRoomId: databaseMocks.getExitsByRoomId,
+}));
+
+vi.mock("./get-visible-room-contents.js", () => ({
+    getVisibleRoomContents: contentsMocks.getVisibleRoomContents,
 }));
 
 import { getSituation } from "./get-situation.js";
@@ -40,6 +48,9 @@ describe("getSituation", () => {
             name: "Throne Room",
             description: "A faded throne faces a scarred oak table.",
         });
+
+        contentsMocks.getVisibleRoomContents.mockReset();
+        contentsMocks.getVisibleRoomContents.mockResolvedValue([]);
     });
 
     it("returns the playthrough's current room", async () => {
@@ -61,6 +72,7 @@ describe("getSituation", () => {
                 description: "A faded throne faces a scarred oak table.",
             },
             exits: [],
+            contents: [],
         });
     });
 
