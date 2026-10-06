@@ -10,7 +10,13 @@ Now, LLM's can handle the chatbot functionality. This project has a game-engine 
 
 The client UI is very simple right now, but there's a lot going on behind it.
 
-![result of clicking the look button](images/look.png)
+![look around](images/look-around.png)
+
+![take key](images/take-key.png)
+
+![take chest](images/take-chest.png)
+
+![chest can't be taken](images/no-chest.png)
 
 
 ## Prerequisites
