@@ -154,4 +154,63 @@ describe("askGameAssistant", () => {
 
     expect(mcpClient.callTool).not.toHaveBeenCalled();
   });
+
+  it("binds tool calls to the active playthrough", async () => {
+    const callTool = vi.fn().mockResolvedValue({
+      content: [{ type: "text", text: "{}" }],
+      structuredContent: {},
+    });
+
+    const mcpClient = {
+      listTools: vi.fn().mockResolvedValue({
+        tools: [
+          {
+            name: "look",
+            inputSchema: {
+              type: "object",
+              properties: {
+                playthroughId: { type: "string" },
+              },
+              required: ["playthroughId"],
+            },
+          },
+        ],
+      }),
+      callTool,
+    } as unknown as Client;
+
+    ollamaMocks.chatWithOllama
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          {
+            function: {
+              name: "look",
+              arguments: {
+                playthroughId: "model-generated-id",
+              },
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        role: "assistant",
+        content: "You are in the Throne Room.",
+      });
+
+    await askGameAssistant(
+      mcpClient,
+      "Look around.",
+      ["look"],
+      "active-playthrough-id",
+    );
+
+    expect(callTool).toHaveBeenCalledWith({
+      name: "look",
+      arguments: {
+        playthroughId: "active-playthrough-id",
+      },
+    });
+  });
 });

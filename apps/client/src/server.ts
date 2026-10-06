@@ -18,6 +18,8 @@ const app = express();
 
 app.use(express.static(publicDirectory));
 
+app.use(express.json({ limit: "16kb" }));
+
 app.post("/api/demo", async (_request, response, next) => {
   try {
     const answer = await askGameAssistant(
@@ -85,6 +87,48 @@ app.post("/api/game/:playthroughId/look", async (request, response, next) => {
       "Do not infer exit doors from the room's descriptive text. " +
       "If isLit is false, describe darkness without inventing details.",
       ["look"],
+    );
+
+    response.json({ answer });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/game/:playthroughId/chat", async (request, response, next) => {
+  const { playthroughId } = request.params;
+  const body: unknown = request.body;
+
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      .test(playthroughId)
+  ) {
+    response.status(400).json({
+      error: "A valid playthrough ID is required",
+    });
+    return;
+  }
+
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("message" in body) ||
+    typeof body.message !== "string" ||
+    body.message.trim().length === 0 ||
+    body.message.length > 2000
+  ) {
+    response.status(400).json({
+      error: "A message of 1–2000 characters is required",
+    });
+    return;
+  }
+
+  try {
+    const answer = await askGameAssistant(
+      mcpClient,
+      body.message.trim(),
+      ["look", "take"],
+      playthroughId,
     );
 
     response.json({ answer });

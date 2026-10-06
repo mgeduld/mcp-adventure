@@ -29,6 +29,7 @@ export async function askGameAssistant(
   mcpClient: Client,
   userMessage: string,
   allowedToolNames?: readonly string[],
+  activePlaythroughId?: string,
 ): Promise<string> {
   const { tools: mcpTools } = await mcpClient.listTools();
 
@@ -53,6 +54,20 @@ export async function askGameAssistant(
         "Use the available tools whenever the user asks about a game.",
         "Do not invent game information.",
         "After receiving a tool result, answer the user briefly.",
+         ...(activePlaythroughId
+        ? [
+          `The active playthrough ID is "${activePlaythroughId}".`,
+          "Use look to obtain current facts and entity IDs before taking an object.",
+          "Never invent entity IDs.",
+          "Only perform actions requested by the player.",
+          "Report tool failures honestly; do not claim an action succeeded.",
+          "Match each contents item's targetId to room.id or another item's id.",
+          "Array order does not indicate containment.",
+          "An exit with portalEntityId null has no door.",
+          "Do not infer exit doors from room descriptions.",
+          "If isLit is false, describe darkness without inventing details.",
+        ]
+        : []),
       ].join(" "),
     },
     {
@@ -115,11 +130,18 @@ export async function askGameAssistant(
         );
       }
 
+      const parsedArguments = parseArguments(
+        toolCall.function.arguments,
+      );
+
       const toolResult = await mcpClient.callTool({
         name: toolCall.function.name,
-        arguments: parseArguments(
-          toolCall.function.arguments,
-        ),
+        arguments: activePlaythroughId
+          ? {
+            ...parsedArguments,
+            playthroughId: activePlaythroughId,
+          }
+          : parsedArguments,
       });
 
       // history sent back to model with each prompt (now including tool-call result)
