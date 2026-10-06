@@ -45,3 +45,21 @@ export async function getPlacementOverride(
     inInventory: row.in_inventory,
   };
 }
+
+export async function getInventoryEntityIds(
+  playthroughId: string,
+  queryable: Queryable = db,
+): Promise<string[]> {
+  const result = await queryable.query<{ entity_id: string }>(
+    `
+      select entity_id
+      from placement_state
+      where playthrough_id = $1
+        and in_inventory
+      order by entity_id
+    `,
+    [playthroughId],
+  );
+
+  return result.rows.map((row) => row.entity_id);
+}

@@ -144,4 +144,26 @@ describe("getSituation", () => {
 
         expect(situation.exits).toEqual(exits);
     });
+
+    it("includes the visible room contents", async () => {
+        const contents = [
+            {
+                id: "chest-id",
+                name: "iron chest",
+                description: "An iron-bound chest.",
+                targetId: "table-id",
+                relation: "on",
+            },
+        ];
+
+        contentsMocks.getVisibleRoomContents.mockResolvedValue(contents);
+
+        const situation = await getSituation("playthrough-id");
+
+        expect(
+            contentsMocks.getVisibleRoomContents,
+        ).toHaveBeenCalledWith("playthrough-id");
+
+        expect(situation.contents).toEqual(contents);
+    });
 });
