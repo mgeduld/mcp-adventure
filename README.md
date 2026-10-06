@@ -2,6 +2,17 @@
 
 An npm-workspaces monorepo for an LLM-driven text adventure. 
 
+I grew up playing test-adventure games and writing my own. There are two main parts to such projects: the game engine that models and manipulates the world, and what we now called a chatbot, so that the user can issue commands and get feedback in conversational text. 
+
+That second part used to mean complex text parsing (e.g. building in grammar), especially if you wanted to accept input like "Use the broad sword to attack the small dragon and then exit through the west door" and not just "kill dragon."
+
+Now, LLM's can handle the chatbot functionality. This project has a game-engine that models a world inside a postgres database. There's then a repository layer that connected to it, a game-engine layer that uses the repository, and an mcp that can call game functions. Currently, it's set up for local testing with Ollama models calling the MCP.
+
+The client UI is very simple right now, but there's a lot going on behind it.
+
+![result of clicking the look button](images/look.png)
+
+
 ## Prerequisites
 
 - Node.js 20 or newer
