@@ -3,6 +3,7 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { registerGetGameInfoTool } from "./tools/get-game-info.js";
 import { registerStartGameTool } from "./tools/start-game.js";
 import { registerLookTool } from "./tools/look.js";
+import { registerTakeTool } from "./tools/take.js";
 
 function createServer(): McpServer {
   const server = new McpServer({
@@ -13,6 +14,7 @@ function createServer(): McpServer {
   registerGetGameInfoTool(server);
   registerStartGameTool(server);
   registerLookTool(server);
+  registerTakeTool(server);
 
   return server;
 }
